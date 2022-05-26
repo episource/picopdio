@@ -1,5 +1,5 @@
 # About
-Another internet radio player project reusing parts and case of an old DNT ipdio internet radio, that stopped working due to the shutdown of Reciva services.
+Another internet radio player project reusing parts and case of an old DNT IPdio Tune internet radio, that stopped working due to the shutdown of Reciva services.
 
 The project is build using PlatformIO and [arduino-pico](https://github.com/earlephilhower/arduino-pico) core around a [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/) microcontroller. It uses nodejs' [llhttp](https://github.com/nodejs/llhttp) parser for reading icecast radio streams.
 
@@ -8,7 +8,7 @@ Configuration is stored on an SD card placed into the radio's front panel SD car
 # Parts
 This is the list of parts used in the project. See the [schematics](schematics/picopdio.pdf) for details.
 
- * DNT ipdio Tune
+ * DNT IPdio Tune
     - Case
     - Mother board including Wolfson WM8711B audio codec/DAC and power supply
     - Front Panel including some unknown Tinsharp 132x48 LCD (ST7565 compatible)
