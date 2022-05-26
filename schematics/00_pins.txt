@@ -1,0 +1,141 @@
+              G                 G 
+  / 20 18 16 14 12 10 08 06 04 02 | J1
+  | 19 17 15 13 11 09 07 05 03 01 |             J2/U11
+       V3        G             V3               ------
+     J3                                         02  01
+     -----                                      04  03
+     02 01 G                                    06  05
+     04 03                                      08  07
+     06 05                                      10  09 G
+   G 08 07                                      12  11
+     10 09                                   V3 14  13
+     12 11                                    G 16  15
+     14 13                                      18  17
+     16 15                                      20  19
+     18 17                                    G 22  21
+     20 19  G                                   24  23 G
+  NC 22 21 NC                                   26  25
+  NC 24 23 NC                                 G 28  27
+  NC 26 25 NC                                   30  29
+  NC 28 27 NC                                   32  31 G
+  NC 30 29 NC                                V3 34  33
+  NC 32 31 NC                              V1.8 36  35
+                                                38  37
+                                              G 40  39
+
+
+  / 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 |J7
+  | 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 |
+  
+
+
+J1:
+03 = SDDAT3 (CS) via J11/7 zu SD/10
+05 = SDDAT2 via J11/8 zu SD/11
+06 = WM8711B DACDAT (I2S DAT)
+07 = SDDAT1 via J11/ zu SD/2
+08 = WM8711B BCLK (I2S BCLK)
+09 = SDDAT0 (MISO) via J11/ zu SD/3
+10 = WM8711B DACLRC (I2S LRCLK)
+13 = SDCMD (MOSI) via J11/6 zu SD/11
+15 = SDCLK via Koaxkabel zu SD/05
+16 = LCD Backlight FET via R60
+19 = I2C SCL
+
+
+J2:
+01 = Power LED FET via R133
+08 = I2C SDA
+10 = SD Card Detect (SD/8) via J11/1
+12 = SD Write Protect (SD/1) via J11/2
+15 = Taster Drehknopf B | Taster Power Back
+17 = Taster Pre/Play B | Taster Mode B | Taster Back B
+19 = Drehgeber B
+21 = Drehgeber A
+33 = Drehknopf LED FET via R132
+
+J3:
+02 = Taster Drehknopf A | Taster Back A
+04 = Taster Mode A | Taster Power A
+06 = Taster Pre/Play A
+----
+03 = LCDD7
+05 = LCDD6
+07 = LCDD5
+09 = LCDD4
+11 = LCDD3
+13 = LCDD2
+15 = LCDD1
+17 = LCDD0
+----
+10 = LCDN5/C5
+12 = LCDN4/C4
+14 = LCDN3/C3
+16 = LCDN2/C2
+18 = LCDN1/C1
+20 = LCDN0/C0
+
+
+
+
+Taster/Drehgeber: A = oben; B = unten
+
+J7 -> Sockel/Pin = Beschreibung
+1  -> J2/15      = Taster Drehknopf B | Taster Power B
+3  -> J2/01      = Power LED FET via R133
+4  -> J1/16      = LCD Backlight FET via R60 (Pulldown zu GND via R61)                                                                            
+5                = GND
+14  -> J2/17     = Taster Pre/Play B | Taster Mode B | Taster Back B
+15  -> J2/19     = Drehgeber B
+16               = GND
+17  -> J3/04     = Taster Mode A | Taster Power A
+20  -> J2/33     = Drehknopf LED FET via R132
+21               = +5V
+22               = +3V3?
+29  -> J3/06     = Taster Pre/Play A
+30  -> J3/02     = Taster Drehknopf A | Taster Back A
+32  -> J2/21     = Drehgeber A
+
+Drehgeber Mitte = GND, A/B per Kondensator zu Ground entprellt
+
+
+Button-Matrix:
+
+      | J3/02     | J3/04 | J3/06   
+J2/15 | Drehknopf | Power | 
+J2/17 | Back      | Mode  | Pre/Play
+
+
+
+Notizen SD Card Socket
+
+
+|  11 10 09 08 07 06 05 04 03 02 01
+\___________________________________|
+
+01 = Verbunden mit P07/P04 (GND) wenn Karte ohne Write Protect gesteckt oder keine Karte, high wenn WP -> J2/12
+02 = SDDAT1 -> J1/7
+03 = SDDAT0 -> J1/9
+04 = GND
+05 = SDCLK -> via Koaxkabel zu J1/15
+06 = V3 (Kondensator zu GND)
+07 = GND
+08 = SD Card Detect (GND wenn Karte gesteckt) -> J2/10
+09 = SDCMD -> J1/13
+10 = SDDAT3 -> J1/3
+11 = SDDAT2 -> J1/5
+
+
+J11
+|----|
+| 01 | SD Card Detect (SD/08) -> J2/10
+| 02 | SD Write Protect (SD/01) -> J2/12
+| 03 | SDDAT1 -> J1/7
+| 04 | SDDAT0 (MISO) -> J1/9
+| 05 | seitlicher Pin SD Card Socket. Bedeutung unklar. Kondensator zu GND.
+| 06 | SDCMD (MOSI) -> J1/13
+| 07 | SDDAT3 (CS) -> J1/3
+| 08 | SDDAT2 -> J1/5
+| 09 | V3
+| 10 | GND
+|----| 

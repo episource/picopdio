@@ -1,0 +1,41 @@
+#pragma once
+
+#define SPI_COMPONENTS_RESET_LOW 2
+#define I2C_COMPONENTS_RESET_LOW 3
+
+#define ETH_CS 22
+
+#define SD_CS 13
+
+#define VS1053_CS 4
+#define VS1053_DCS 5
+#define VS1053_DREQ 6
+
+#define LCD_BG 17
+
+#define WIRE_HIGH_SPEED_SCL PIN_WIRE1_SCL
+#define WIRE_HIGH_SPEED_SDA PIN_WIRE1_SDA
+#define WIRE_LOW_SPEED_SCL 21
+#define WIRE_LOW_SPEED_SDA 20
+
+#define CHANNEL_SELECTOR_ROT_HIGH 10
+#define CHANNEL_SELECTOR_ROT_LOW 11
+
+#define DEFAULT_INIT_DELAY_MS 100
+
+#define VOLUME  80 // volume level 0-100
+
+#define CONFIG_FILE "picopdio.ini"
+#define STATION_FILE "station.idx"
+
+#define WIRE_LOW_SPEED Wire
+#define WIRE_HIGH_SPEED Wire1
+
+#define SPI_MAIN SPI
+#define SPI_DEDICATED_SD SPI1
+#define SPI_DEDICATED_SD_SPEED SPI_DIV3_SPEED
+
+#define LCD_BRIGHTNESS_STEPS 4
+#define LCD_MIN_BRIGHTNESS 16
+#define LCD_MAX_BRIGHTNESS 128
+#define LCD_DEFAULT_BRIGHTNESS LCD_MAX_BRIGHTNESS // should be near to 125 for best view

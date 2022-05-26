@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="pico" ENABLED="true" CONFIG_NAME="pico" GENERATION_OPTIONS="-G &quot;MinGW Makefiles&quot; -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" />
+      <configuration PROFILE_NAME="native-ucrt64 (native)" ENABLED="true" CONFIG_NAME="native" TOOLCHAIN_NAME="ucrt64 (native)" GENERATION_OPTIONS="-G &quot;MinGW Makefiles&quot; -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" />
+    </configurations>
+  </component>
+</project>
