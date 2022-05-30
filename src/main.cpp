@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <debug_internal.h>
-#include <Ethernet.h>
+#include <Ethernet3.h>
 #include <SdFat.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -112,15 +112,11 @@ void setup() {
         digitalWrite(SPI_COMPONENTS_RESET_LOW, HIGH);
 
         delay(DEFAULT_INIT_DELAY_MS);
-        Ethernet.init(ETH_CS);
+        Ethernet.setCsPin(ETH_CS);
+        Ethernet.init(2);
         Ethernet.begin(
                 const_cast<uint8_t *>(picopdioConfig.getMac()),
                 picopdioConfig.getIp(), picopdioConfig.getDns(), picopdioConfig.getGateway());
-
-        if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-            DEBUGV("Failed to init ETH\n");
-            continue;
-        }
 
         player.begin();
 
