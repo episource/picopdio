@@ -150,10 +150,8 @@ void loop() {
     static uint32_t lastBufLevelUpdateMillis = 0;
 
     uint8_t wantedStationIdx = stationSelection % picopdioConfig.numStations();
-    bool connected = icyStream.connected();
-
     uint32_t nowMs = millis();
-    if (!connected || wantedStationIdx != connectedStationIdx) {
+    if (!icyStream.connected() || !Ethernet.link() || wantedStationIdx != connectedStationIdx) {
         if (playing) {
             player.setVolume(0);
             player.stopSong();
@@ -166,11 +164,18 @@ void loop() {
         minBuffer = 0;
         bufLevel = 0;
 
-        storeStation(wantedStationIdx);
+        if (!Ethernet.link()) {
+            DEBUGV("No link!\n");
 
-        icyStream.connect(picopdioConfig.getStationUrl(wantedStationIdx));
+            icyStream.stop();
+            return;
+        } else {
+            DEBUGV("Link ready - PHY state: 0x%02x\n", Ethernet.phyState());
 
-        connectedStationIdx = wantedStationIdx;
+            storeStation(wantedStationIdx);
+            icyStream.connect(picopdioConfig.getStationUrl(wantedStationIdx));
+            connectedStationIdx = wantedStationIdx;
+        }
     } else if (nowMs - lastBufLevelUpdateMillis > 1000) {
         lastBufLevelUpdateMillis = nowMs;
 
