@@ -118,6 +118,23 @@ void setup() {
                 const_cast<uint8_t *>(picopdioConfig.getMac()),
                 picopdioConfig.getIp(), picopdioConfig.getDns(), picopdioConfig.getGateway());
 
+        switch (picopdioConfig.compatMode()) {
+            case ETH_FULL_AUTONEG:
+                Ethernet.phyMode(ALL_AUTONEG);
+                break;
+            case ETH_100_HD:
+                Ethernet.phyMode(HALF_DUPLEX_100);
+                break;
+            case ETH_10_HD:
+                Ethernet.phyMode(HALF_DUPLEX_10);
+                break;
+            case ETH_HW_DEFAULT:
+            default:
+                // nothing to do
+                break;
+        }
+
+
         player.begin();
 
         // 4 == VS1053;
@@ -165,8 +182,6 @@ void loop() {
         bufLevel = 0;
 
         if (!Ethernet.link()) {
-            DEBUGV("No link!\n");
-
             icyStream.stop();
             return;
         } else {
