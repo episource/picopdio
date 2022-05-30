@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <debug_internal.h>
 #include <Ethernet3.h>
+#include <pico.h>
 #include <SdFat.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -33,9 +34,12 @@ SdFat SD;
 // feedLimit = 32000: EthernetClient shows nondeterministic behavior for larger sizes
 IcyStreamClient<16000, 4096, 32000, false> icyStream(ethClient);
 
-volatile uint8_t stationSelection = 0;
+volatile uint8_t wantedStationIdx = 0;
+critical_section_t wantedStationUpdateSection;
+
 volatile bool core0SetupDone = false;
 volatile bool playing = true;
+
 
 SX1509 sx1509;
 
@@ -62,15 +66,41 @@ uint8_t restoreStation() {
     File32 stationFile = SD.open(STATION_FILE, FILE_READ);
     uint8_t result = stationFile.available() ? (uint8_t) stationFile.read() : 0;
     stationFile.close();
+
+    if (result < 0) {
+        return 0;
+    } else if (result >= picopdioConfig.numStations()) {
+        return picopdioConfig.numStations() - 1;
+    }
+
     return result;
 }
 
 bool khzHeartbeat(struct repeating_timer *t) {
-    stationSelection += rotdec.readAndDecode(CHANNEL_SELECTOR_ROT_HIGH, CHANNEL_SELECTOR_ROT_LOW);
+    RotaryDecoder::Step step = rotdec.readAndDecode(CHANNEL_SELECTOR_ROT_HIGH, CHANNEL_SELECTOR_ROT_LOW);
+    if (step == RotaryDecoder::NO_STEP) {
+        return true;
+    }
+
+    critical_section_enter_blocking(&wantedStationUpdateSection);
+
+    uint8_t maxStationIdx = picopdioConfig.numStations() - 1;
+    if (step == RotaryDecoder::BACKWARD && wantedStationIdx == 0) {
+        wantedStationIdx = maxStationIdx;
+    } else if (step == RotaryDecoder::FORWARD && wantedStationIdx == maxStationIdx) {
+        wantedStationIdx = 0;
+    } else {
+        wantedStationIdx += step;
+    }
+
+    critical_section_exit(&wantedStationUpdateSection);
+
     return true;
 }
 
 void setup() {
+    critical_section_init(&wantedStationUpdateSection);
+
     Serial.begin(115200);
     Serial1.begin(115200);
 
@@ -103,7 +133,10 @@ void setup() {
             DEBUGV("No stations found!\n");
             continue;
         }
-        stationSelection = restoreStation();
+
+        // no need to enter critical section here:
+        // parallelism starts when core0 is ready
+        wantedStationIdx = restoreStation();
 
 
         // Reset other spi slaves
@@ -166,9 +199,9 @@ void loop() {
     static uint8_t bufLevel = 4;
     static uint32_t lastBufLevelUpdateMillis = 0;
 
-    uint8_t wantedStationIdx = stationSelection % picopdioConfig.numStations();
+    uint8_t requestedStationIdx = wantedStationIdx;
     uint32_t nowMs = millis();
-    if (!icyStream.connected() || !Ethernet.link() || wantedStationIdx != connectedStationIdx) {
+    if (!icyStream.connected() || !Ethernet.link() || requestedStationIdx != connectedStationIdx) {
         if (playing) {
             player.setVolume(0);
             player.stopSong();
@@ -187,9 +220,9 @@ void loop() {
         } else {
             DEBUGV("Link ready - PHY state: 0x%02x\n", Ethernet.phyState());
 
-            storeStation(wantedStationIdx);
-            icyStream.connect(picopdioConfig.getStationUrl(wantedStationIdx));
-            connectedStationIdx = wantedStationIdx;
+            storeStation(requestedStationIdx);
+            icyStream.connect(picopdioConfig.getStationUrl(requestedStationIdx));
+            connectedStationIdx = requestedStationIdx;
         }
     } else if (nowMs - lastBufLevelUpdateMillis > 1000) {
         lastBufLevelUpdateMillis = nowMs;
@@ -279,6 +312,7 @@ void setup1() {
     // wait for core0 for MCLK to be ready
     dac.begin();
 
+    // wait for core0 to finish reading PicopdioConfig
     khzHeartbeatTimer.attachInterrupt(1000, khzHeartbeat);
 
     sx1509.begin(0x3E, WIRE_LOW_SPEED);
@@ -320,7 +354,9 @@ void loop1() {
 
                 analogWrite(LCD_BG, lcdBrightness);
             } else if (key != KEY_UNUSED) {
-                stationSelection = key;
+                critical_section_enter_blocking(&wantedStationUpdateSection);
+                wantedStationIdx = key;
+                critical_section_exit(&wantedStationUpdateSection);
             }
         }
     }
@@ -337,11 +373,11 @@ void loop1() {
         }
     }
 
-    uint8_t wantedStationIdx = stationSelection % picopdioConfig.numStations();
+    uint8_t requestedStationIdx = wantedStationIdx;
     static uint8_t currentDisplayStationIdx = UINT8_MAX;
-    if (wantedStationIdx != currentDisplayStationIdx) {
-        ui.showLoadScreen(wantedStationIdx + 1, picopdioConfig.getStationName(wantedStationIdx).raw());
-        currentDisplayStationIdx = wantedStationIdx;
+    if (requestedStationIdx != currentDisplayStationIdx) {
+        ui.showLoadScreen(requestedStationIdx + 1, picopdioConfig.getStationName(requestedStationIdx).raw());
+        currentDisplayStationIdx = requestedStationIdx;
     }
 
     ui.loop();
