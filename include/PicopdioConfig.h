@@ -9,6 +9,13 @@ using namespace arduino;
 
 extern void printIniError(IniFile &ini);
 
+enum ETH_COMPAT_MODE : uint8_t {
+    ETH_HW_DEFAULT,
+    ETH_FULL_AUTONEG,
+    ETH_100_HD,
+    ETH_10_HD
+};
+
 template<int _maxStations, int _bufferSize> class PicopdioConfig final {
 public:
     bool init(const char* filename) {
@@ -53,11 +60,16 @@ public:
         return _mac;
     }
 
+    const ETH_COMPAT_MODE compatMode () {
+        return _compatMode;
+    }
+
 private:
     IPAddress _ip;
     IPAddress _gateway;
     IPAddress _dns;
     uint8_t _mac[6];
+    ETH_COMPAT_MODE _compatMode;
 
     CStringBuffer<_bufferSize, _maxStations * 2> _buffer;
 
@@ -66,6 +78,8 @@ private:
         _gateway = (uint32_t)0;
         _dns = (uint32_t)0;
         std::fill_n(_mac, std::size(_mac), 0);
+
+        _compatMode = ETH_FULL_AUTONEG;
 
         _buffer.removeAll();
     }
@@ -124,11 +138,28 @@ private:
             return false;
         }
 
-        DEBUGV("# Network config\n    MAC: %02x:%02x:%02x:%02x:%02x:%02x\n    IP: %d.%d.%d.%d    \n    Gateway: %d.%d.%d.%d\n    DNS: %d.%d.%d.%d\n",
+        if (ini.getValue("network", "compat", buffer.raw(), buffer.rawCapacity())) {
+            buffer.toUpper();
+
+            if (buffer == "ETH_100_HD") {
+                _compatMode = ETH_100_HD;
+            } else if (buffer == "ETH_10_HD") {
+                _compatMode = ETH_10_HD;
+            } else if (buffer == "ETH_FULL_AUTONEG") {
+                _compatMode = ETH_FULL_AUTONEG;
+            } else {
+                DEBUGV("Unknown compat mode %s, assuming ETH_HW_DEFAULT\n", buffer);
+            }
+        } else {
+            _compatMode = ETH_HW_DEFAULT;
+        }
+
+        DEBUGV("# Network config\n    MAC: %02x:%02x:%02x:%02x:%02x:%02x\n    IP: %d.%d.%d.%d    \n    Gateway: %d.%d.%d.%d\n    DNS: %d.%d.%d.%d\n    ETH_COMPAT_MODE: %d\n",
                _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5],
                _ip[0], _ip[1], _ip[2], _ip[3],
                _gateway[0], _gateway[1], _gateway[2], _gateway[3],
-               _dns[0], _dns[1], _dns[2], _dns[3]);
+               _dns[0], _dns[1], _dns[2], _dns[3],
+               _compatMode);
 
         return true;
     }
