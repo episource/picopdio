@@ -16,7 +16,11 @@ This is the list of parts used in the project. See the [schematics](schematics/p
  * [Adafruit VS1053B Breakout](https://learn.adafruit.com/adafruit-vs1053-mp3-aac-ogg-midi-wav-play-and-record-codec-tutorial/downloads-and-links)
  * [Microchip MCP23017 IO Expander](https://www.microchip.com/en-us/product/mcp23017)
  * [Sparkfun SX1509 IO Expander](https://www.sparkfun.com/products/13601)
- * Wiznet W5500 based `W5500 Lite`/`USR-ES1` SPI ethernet adapter
+ * [WIZnet W850io SPI ethernet shield](https://www.wiznet.io/product-item/wiz850io/) ~~WIZnet W5500 based no-name `W5500 Lite` SPI ethernet adapter~~ 
+   - no-name W850io clones had auto negotiation issues with some switches 
+   - therefore replaced by WIZnet made W850io shield
+   - note: disabling auto negotiation and forcing 100MBit or 10MBit Half Duplex instead solved these issues with the no-name clones as well
+   - see also WIZnet forums for a [similar issue](https://forum.wiznet.io/t/topic/5529)
  * [Pololu Mini Pushbutton Power Switch #2808](https://www.pololu.com/product/2808)
 
 # Further Reading
