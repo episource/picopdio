@@ -296,7 +296,7 @@ void setup1() {
     // - using lower pull-ups does not help to achieve higher rates
     // - not though, that going >1MHZ makes the bus very sensitive to noise
     //   on breadboard designs
-    WIRE_HIGH_SPEED.setClock(1300000);
+    WIRE_HIGH_SPEED.setClock(1000000);
     WIRE_HIGH_SPEED.begin();
 
     // early display of gui!
