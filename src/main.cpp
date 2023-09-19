@@ -101,7 +101,7 @@ bool khzHeartbeat(struct repeating_timer *t) {
 void setup() {
     critical_section_init(&wantedStationUpdateSection);
 
-    Serial.begin(115200);
+    //Serial.begin(115200);
     Serial1.begin(115200);
 
     SPI_MAIN.begin(false);
