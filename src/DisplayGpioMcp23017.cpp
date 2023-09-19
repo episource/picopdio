@@ -28,7 +28,7 @@ PinStatus PlatformAndSharedMCP23017Gpio::digitalRead(pin_size_t pinNumber) {
     pin_size_t internalPinNumber = pinNumber;
     if (translatePin(pinNumber, internalPinNumber)) {
         PinStatus result = (PinStatus)mcp23017.digitalRead(internalPinNumber);
-        DEBUGMCP_ERR(mcp23017, "MCP23017 digitalWrite failed: 0x%x\n");
+        DEBUGMCP_ERR(mcp23017, "MCP23017 digitalRead failed: 0x%x\n");
         return result;
     }
     return DisplayGpioAdapter::digitalRead(pinNumber);
