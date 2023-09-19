@@ -33,6 +33,8 @@ public:
     void setStation(uint8_t stationNumber, char* stationName);
     void setBufferLevel(uint8_t bufferLevel);
 
+    bool resetRequest();
+
 private:
     enum ScreenSelection : uint8_t {
         INIT,

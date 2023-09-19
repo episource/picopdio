@@ -10,6 +10,8 @@
 #include <SparkFunSX1509.h>
 #include <VS1053.h>
 
+#include <hardware/watchdog.h>
+
 #include "PicopdioDefinitions.h"
 
 #include "PicopdioConfig.h"
@@ -293,14 +295,21 @@ void setup1() {
     // - using external pull-ups rp2040 can do more than 1MHz, though
     // - using external 10k pull-ups, 1.35MHz baud rate seem to work most
     //   of the time, up to 1.30MHZ stable,
-    // - using lower pull-ups does not help to achieve higher rates
-    // - not though, that going >1MHZ makes the bus very sensitive to noise
+    // - using lower pull-ups does not help to achieve higher rate
+    // - note though, that going >1MHZ makes the bus very sensitive to noise
     //   on breadboard designs
-    WIRE_HIGH_SPEED.setClock(1000000);
+    WIRE_HIGH_SPEED.setClock(1300000);
     WIRE_HIGH_SPEED.begin();
 
     // early display of gui!
     ui.begin(true);
+    if (ui.resetRequest()) {
+        DEBUGV("Failed to initialize display. Rebooting...\n");
+        watchdog_reboot(0, 0, 10);
+        while (true) {
+            yield();
+        }
+    }
 
     // start dac + shaft and key decoding only after core 0 is ready
     // => stations not available before SD card has been read
@@ -321,9 +330,16 @@ void setup1() {
     // normal buttons: debounce time 4ms is good
     // rotary switch button: debounce time must be >= 16ms!
     sx1509.keypad(KEY_ROWS, KEY_COLS, 0, 32, 16);
+
+    DEBUGV("Core1 ready!\n");
 }
 
 void loop1() {
+    if (ui.resetRequest()) {
+        DEBUGV("Resetting display...\n");
+        ui.begin(false);
+    }
+
     uint32_t now = millis();
 
     uint16_t keyData = 0;

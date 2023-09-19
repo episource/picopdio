@@ -80,20 +80,28 @@ ExclusiveMCP23017Gpio::ExclusiveMCP23017Gpio(int mcp23017Addr, TwoWire *i2c)
 }
 
 void ExclusiveMCP23017Gpio::begin() {
-    mcp23017.begin();
-    DEBUGMCP_ERR(mcp23017, "MCP23017 begin failed: 0x%x\n");
+    for(int i = 0; !mcp23017.begin(); ++i) {
+        DEBUGMCP_ERR(mcp23017, "MCP23017 begin failed: 0x%x\n");
+        delay(10);
+
+        if (i > 10) {
+            DEBUGV("MCP23017 persistent communication error - rebooting!");
+            reset_request = true;
+            return;
+        }
+    }
+
+    reset_request = false;
 }
 
 void ExclusiveMCP23017Gpio::pinMode(pin_size_t pinNumber, PinMode pinMode) {
     mcp23017.pinMode(pinNumber, pinMode);
-    DEBUGMCP_ERR(mcp23017, "MCP23017 pinMode failed: 0x%x\n");
+    HANDLEMCP_ERR(mcp23017, "MCP23017 pinMode failed: 0x%x\n");
 }
 
 void ExclusiveMCP23017Gpio::digitalWrite(pin_size_t pinNumber, PinStatus status) {
-    pin_size_t bankNumber = pinNumber < 8 ? 0 : 1;
-    uint8_t curStatus = gpioState[bankNumber];
     mcp23017.digitalWrite(pinNumber, status);
-    DEBUGMCP_ERR(mcp23017, "MCP23017 digitalWrite failed: 0x%x\n");
+    HANDLEMCP_ERR(mcp23017, "MCP23017 digitalWrite failed: 0x%x\n");
 }
 
 PinStatus ExclusiveMCP23017Gpio::digitalRead(pin_size_t pinNumber) {
@@ -113,7 +121,7 @@ void ExclusiveMCP23017Gpio::writeBank(pin_size_t bankNumber, uint8_t status) {
 
     if (curStatus != status) {
         mcp23017.write8(bankNumber, status);
-        DEBUGMCP_ERR(mcp23017, "MCP23017 write8 failed: 0x%x\n");
+        HANDLEMCP_ERR(mcp23017, "MCP23017 write8 failed: 0x%x\n");
 
         if (mcp23017.lastError() == MCP23017_OK) {
             gpioState[bankNumber] = status;
@@ -123,9 +131,9 @@ void ExclusiveMCP23017Gpio::writeBank(pin_size_t bankNumber, uint8_t status) {
 
 void ExclusiveMCP23017Gpio::setBankMode(pin_size_t bankNumber, PinMode pinMode) {
     mcp23017.pinMode8(bankNumber, pinMode == OUTPUT ? 0 : 1);
-    DEBUGMCP_ERR(mcp23017, "MCP23017 pinMode8 failed: 0x%x\n");
+    HANDLEMCP_ERR(mcp23017, "MCP23017 pinMode8 failed: 0x%x\n");
     mcp23017.setPullup8(bankNumber, pinMode == INPUT_PULLUP ? 1 : 0);
-    DEBUGMCP_ERR(mcp23017, "MCP23017 setPullup8 failed: 0x%x\n");
+    HANDLEMCP_ERR(mcp23017, "MCP23017 setPullup8 failed: 0x%x\n");
 }
 
 uint8_t ExclusiveMCP23017Gpio::readBank(pin_size_t bankNumber) {
@@ -134,11 +142,15 @@ uint8_t ExclusiveMCP23017Gpio::readBank(pin_size_t bankNumber) {
     }
 
     uint8_t result = mcp23017.read8(bankNumber);
-    DEBUGMCP_ERR(mcp23017, "MCP23017 read8 failed: 0x%x\n");
+    HANDLEMCP_ERR(mcp23017, "MCP23017 read8 failed: 0x%x\n");
 
     if (mcp23017.lastError() == MCP23017_OK) {
         gpioState[bankNumber] = result;
     }
 
     return result;
+}
+
+bool ExclusiveMCP23017Gpio::resetRequest() {
+    return reset_request;
 }

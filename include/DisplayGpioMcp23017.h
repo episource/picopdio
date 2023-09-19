@@ -7,9 +7,11 @@
 #if !defined(DEBUG_RP2040_PORT)
 #define DEBUGMCP(...) do { } while(0)
 #define DEBUGMCP_ERR(...) do { } while(0)
+#define HANDLEMCP_ERR(mcp, fmt) do {  int lastError = mcp.lastError(); if (lastError != MCP23017_OK) { reset_request = true; } } while(0)
 #else
 #define DEBUGMCP(...) DEBUGV(__VA_ARGS__)
 #define DEBUGMCP_ERR(mcp, fmt) do {  int lastError = mcp.lastError(); if (lastError != MCP23017_OK) { DEBUGV(fmt, lastError); } } while(0)
+#define HANDLEMCP_ERR(mcp, fmt) do {  int lastError = mcp.lastError(); if (lastError != MCP23017_OK) { reset_request = true; DEBUGV(fmt, lastError); } } while(0)
 #endif
 
 /// platform gpio (pins < 100), and mcp23017 gpio (pins >= 100, banks 100+101)
@@ -48,9 +50,11 @@ public:
     virtual void setBankMode(pin_size_t bankNumber, PinMode pinMode) override;
     virtual uint8_t readBank(pin_size_t bankNumber) override;
 
+    virtual bool resetRequest();
 private:
     constexpr static pin_size_t MAX_BANK = 1;
 
     uint8_t gpioState[2] {};
     MCP23017 mcp23017;
+    bool reset_request = false;
 };

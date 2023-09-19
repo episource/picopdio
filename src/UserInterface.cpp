@@ -9,13 +9,12 @@ void UserInterface::begin(bool showInitMessage) {
     _u8g2.clearDisplay();
 
     if (showInitMessage) {
-        while (loop());
+        while (loop() && !resetRequest());
     }
 }
 
 bool UserInterface::loop() {
     uint32_t mutexOwner = 0;
-
     if (!mutex_try_enter(&_sharedStateLock, &mutexOwner)) {
         return _displayPagesRemaining;
     }
@@ -147,6 +146,10 @@ void UserInterface::setBufferLevel(uint8_t bufferLevel) {
     }
 
     mutex_exit(&_sharedStateLock);
+}
+
+bool UserInterface::resetRequest() {
+    return _display8080Gpio.resetRequest();
 }
 
 int UserInterface::_calcNextTitleLineOffset(int curTopLineOffset) {
