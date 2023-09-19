@@ -63,6 +63,7 @@ public:
         auto startOfHost = endOfSchema == npos ? 0 : endOfSchema + 3;
         auto maybeStartOfPath = url.find('/', startOfHost);
         auto maybeStartOfPort = url.find(':', startOfHost);
+        auto maybeHostLength = maybeStartOfPath - startOfHost;
         auto credentialsSeparator = url.find('@', startOfHost);
 
         if (maybeStartOfPath == npos) {
@@ -75,18 +76,20 @@ public:
         }
 
         uint16_t port = 80;
-        if (maybeStartOfPort != npos && maybeStartOfPort < maybeStartOfPath) {
-            std::string_view portString = url.substr(maybeStartOfPort, maybeStartOfPath - maybeStartOfPort);
+        if (maybeStartOfPort != npos && maybeStartOfPort + 1 < maybeStartOfPath) {
+            std::string_view portString = url.substr(maybeStartOfPort + 1, maybeStartOfPath - maybeStartOfPort - 1);
             std::errc portResult = std::from_chars(
                     portString.data(), portString.data() + portString.length(), port).ec;
             if (portResult == std::errc::invalid_argument) {
                 INFO_ICY("Failed to parse url - invalid port.\n");
                 return false;
             }
+
+            maybeHostLength = maybeStartOfPort - startOfHost;
         }
 
         return connect(
-                url.substr(startOfHost, maybeStartOfPath - startOfHost),
+                url.substr(startOfHost, maybeHostLength),
                 port, url.substr(maybeStartOfPath));
     }
 
