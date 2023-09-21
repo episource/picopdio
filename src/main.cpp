@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <debug_internal.h>
 #include <Ethernet3.h>
 #include <pico.h>
 #include <SdFat.h>

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <debug_internal.h>
 
 #include "PicopdioConfig.h"
