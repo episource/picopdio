@@ -138,6 +138,7 @@ private:
             return false;
         }
 
+        _compatMode = ETH_HW_DEFAULT;
         if (ini.getValue("network", "compat", buffer.raw(), buffer.rawCapacity())) {
             buffer.toUpper();
 
@@ -147,11 +148,9 @@ private:
                 _compatMode = ETH_10_HD;
             } else if (buffer == "ETH_FULL_AUTONEG") {
                 _compatMode = ETH_FULL_AUTONEG;
-            } else {
-                DEBUGV("Unknown compat mode %s, assuming ETH_HW_DEFAULT\n", buffer);
+            } else if (buffer != "ETH_HW_DEFAULT"){
+                DEBUGV("Unknown compat mode %s, assuming ETH_HW_DEFAULT\n", buffer.raw());
             }
-        } else {
-            _compatMode = ETH_HW_DEFAULT;
         }
 
         DEBUGV("# Network config\n    MAC: %02x:%02x:%02x:%02x:%02x:%02x\n    IP: %d.%d.%d.%d    \n    Gateway: %d.%d.%d.%d\n    DNS: %d.%d.%d.%d\n    ETH_COMPAT_MODE: %d\n",
