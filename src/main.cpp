@@ -55,6 +55,7 @@ uint8_t keyMap[KEY_ROWS][KEY_COLS] = {
 
 void setupOutLine(pin_size_t pin, PinStatus init);
 void setupCsLine(pin_size_t pin);
+void reboot();
 
 void storeStation(uint8_t stationIdx) {
     File32 stationFile = SD.open(STATION_FILE, FILE_WRITE);
@@ -244,9 +245,14 @@ void loop() {
         ui.setBufferLevel(bufLevel);
     }
 
-    int read = icyStream.feedBuffer();
-    if (read == 0) {
-        DEBUGV("feedBuffer: no data available!\n");
+    const int read = icyStream.feedBuffer();
+
+    static uint32_t lastFeedMs = nowMs;
+    if (read > 0) {
+        lastFeedMs = nowMs;
+    } else if (nowMs - lastFeedMs > 5000) {
+        DEBUGV("feedBuffer: no data available for too long! Resetting!\n");
+        reboot();
     }
 
     minBuffer = std::min(minBuffer, icyStream.bufferFillPercent());
@@ -308,10 +314,7 @@ void setup1() {
     ui.begin(true);
     if (ui.resetRequest()) {
         DEBUGV("Failed to initialize display. Rebooting...\n");
-        watchdog_reboot(0, 0, 10);
-        while (true) {
-            yield();
-        }
+        reboot();
     }
 
     // start dac + shaft and key decoding only after core 0 is ready
@@ -409,4 +412,11 @@ void setupOutLine(pin_size_t pin, PinStatus init) {
 
 void setupCsLine(pin_size_t pin) {
     setupOutLine(pin, HIGH);
+}
+
+void reboot() {
+    watchdog_reboot(0, 0, 10);
+    while (true) {
+        yield();
+    }
 }
