@@ -57,14 +57,7 @@ void setupOutLine(pin_size_t pin, PinStatus init);
 void setupCsLine(pin_size_t pin);
 void reboot();
 
-void storeStation(uint8_t stationIdx) {
-    File32 stationFile = SD.open(STATION_FILE, FILE_WRITE);
-    stationFile.truncate(0);
-    stationFile.write(stationIdx);
-    stationFile.close();
-}
-
-uint8_t restoreStation() {
+uint8_t loadStation() {
     File32 stationFile = SD.open(STATION_FILE, FILE_READ);
     uint8_t result = stationFile.available() ? (uint8_t) stationFile.read() : 0;
     stationFile.close();
@@ -76,6 +69,21 @@ uint8_t restoreStation() {
     }
 
     return result;
+}
+
+void storeStation(const uint8_t stationIdx) {
+    const uint8_t curStationIdx = loadStation();
+    if (stationIdx == curStationIdx) {
+        DEBUGV("station file already up-to-date: %d - skipping write!\n", stationIdx);
+        return;
+    }
+
+    File32 stationFile = SD.open(STATION_FILE, FILE_WRITE);
+    stationFile.seek(0);
+    stationFile.write(stationIdx);
+    stationFile.close();
+
+    DEBUGV("station file written: %d!\n", stationIdx);
 }
 
 bool khzHeartbeat(struct repeating_timer *t) {
@@ -138,7 +146,7 @@ void setup() {
 
         // no need to enter critical section here:
         // parallelism starts when core0 is ready
-        wantedStationIdx = restoreStation();
+        wantedStationIdx = loadStation();
 
 
         // Reset other spi slaves
@@ -222,7 +230,6 @@ void loop() {
         } else {
             DEBUGV("Link ready - PHY state: 0x%02x\n", Ethernet.phyState());
 
-            storeStation(requestedStationIdx);
             icyStream.connect(picopdioConfig.getStationUrl(requestedStationIdx));
             connectedStationIdx = requestedStationIdx;
         }
@@ -271,6 +278,7 @@ void loop() {
         bufLevel = 4;
 
         ui.showTitleScreen(icyStream.icyTitle(), 4);
+        storeStation(connectedStationIdx);
     }
 
     icyStream.readTo([](const uint8_t *data, int size) -> int {
