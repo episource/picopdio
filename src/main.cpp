@@ -56,6 +56,8 @@ uint8_t keyMap[KEY_ROWS][KEY_COLS] = {
 void setupOutLine(pin_size_t pin, PinStatus init);
 void setupCsLine(pin_size_t pin);
 void reboot();
+void showHttpError(int statusCode);
+void showNoLinkError();
 
 uint8_t loadStation() {
     File32 stationFile = SD.open(STATION_FILE, FILE_READ);
@@ -208,10 +210,13 @@ void loop() {
     static int minBuffer = 100;
     static uint8_t bufLevel = 4;
     static uint32_t lastBufLevelUpdateMillis = 0;
+    static bool lastLinkState = true;
 
     uint8_t requestedStationIdx = wantedStationIdx;
     uint32_t nowMs = millis();
-    if (!icyStream.connected() || !Ethernet.link() || requestedStationIdx != connectedStationIdx) {
+    boolean stationChangeRequested = requestedStationIdx != connectedStationIdx;
+
+    if (!icyStream.connected() || (bool)Ethernet.link() != lastLinkState || stationChangeRequested) {
         if (playing) {
             player.setVolume(0);
             player.stopSong();
@@ -219,19 +224,27 @@ void loop() {
             playing = false;
         }
 
-        ui.showLoadScreen();
-
-        minBuffer = 0;
-        bufLevel = 0;
-
         if (!Ethernet.link()) {
-            icyStream.stop();
+            if (lastLinkState) {
+                icyStream.stop();
+                showNoLinkError();
+            }
+
+            lastLinkState = false;
             return;
-        } else {
+        }
+
+        if (stationChangeRequested || !lastLinkState) {
             DEBUGV("Link ready - PHY state: 0x%02x\n", Ethernet.phyState());
+
+            ui.showLoadScreen();
 
             icyStream.connect(picopdioConfig.getStationUrl(requestedStationIdx));
             connectedStationIdx = requestedStationIdx;
+
+            lastLinkState = true;
+        } else {
+            return;
         }
     } else if (nowMs - lastBufLevelUpdateMillis > 1000) {
         lastBufLevelUpdateMillis = nowMs;
@@ -253,13 +266,9 @@ void loop() {
     }
 
     const int read = icyStream.feedBuffer();
-
-    static uint32_t lastFeedMs = nowMs;
-    if (read > 0) {
-        lastFeedMs = nowMs;
-    } else if (nowMs - lastFeedMs > 5000) {
-        DEBUGV("feedBuffer: no data available for too long! Resetting!\n");
-        reboot();
+    if (read < 0) {
+        showHttpError(icyStream.httpStatus());
+        icyStream.stop();
     }
 
     minBuffer = std::min(minBuffer, icyStream.bufferFillPercent());
@@ -427,4 +436,18 @@ void reboot() {
     while (true) {
         yield();
     }
+}
+
+void showHttpError(int statusCode) {
+    if (statusCode != 0) {
+        constexpr int maxLen = 30;
+        char msgBuffer[maxLen];
+        snprintf(msgBuffer, maxLen, "Keine Verbindung. HTTP %d.", icyStream.httpStatus());
+        ui.showTitleScreen(msgBuffer, 0);
+    } else {
+        ui.showTitleScreen("Keine Verbindung.", 0);
+    }
+}
+void showNoLinkError() {
+    ui.showTitleScreen("Kein Netzwerk.", 0);
 }

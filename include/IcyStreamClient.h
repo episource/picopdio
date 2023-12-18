@@ -197,6 +197,7 @@ public:
                 return -1;
             }
         } else if (maybeError) {
+            INFO_ICY("End of stream. Maybe error. Http Status %d.\n", httpStatus());
             _transportClient.stop();
             return -1;
         }
