@@ -28,8 +28,8 @@ public:
     void showLoadScreen();
     void showLoadScreen(uint8_t stationNumber, char* stationName);
     void showTitleScreen();
-    void showTitleScreen(char* title, uint8_t bufferLevel);
-    void setTitle(char* title);
+    void showTitleScreen(const char* title, uint8_t bufferLevel);
+    void setTitle(const char* title);
     void setStation(uint8_t stationNumber, char* stationName);
     void setBufferLevel(uint8_t bufferLevel);
 

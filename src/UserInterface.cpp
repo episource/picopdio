@@ -105,7 +105,7 @@ void UserInterface::showTitleScreen() {
     mutex_exit(&_sharedStateLock);
 }
 
-void UserInterface::showTitleScreen(char *title, uint8_t bufferLevel) {
+void UserInterface::showTitleScreen(const char *title, uint8_t bufferLevel) {
     mutex_enter_blocking(&_sharedStateLock);
 
     _bufferLevel = bufferLevel;
@@ -117,7 +117,7 @@ void UserInterface::showTitleScreen(char *title, uint8_t bufferLevel) {
     mutex_exit(&_sharedStateLock);
 }
 
-void UserInterface::setTitle(char *title) {
+void UserInterface::setTitle(const char *title) {
     mutex_enter_blocking(&_sharedStateLock);
 
     if (_titleText != title) {
