@@ -50,8 +50,14 @@ J2:
 12 = SD Write Protect (SD/1) via J11/2
 15 = Taster Drehknopf B | Taster Power Back
 17 = Taster Pre/Play B | Taster Mode B | Taster Back B
+18 = Rückwärtiger USB-Port, D+
 19 = Drehgeber B
+20 = Rückwärtiger USB-Port, D-
 21 = Drehgeber A
+24 = Onboard USB-Port, D-; an TUSB2046B USB Hub
+26 = Onboard USB-Port, D+; an TUSB2046B USB Hub
+30 = Onboard USB RTL8150B ETH Bus Power; 0=ON, Floating/1=OFF
+32 = Onboard USB Wifi Bus Power; 0=ON, Floating/1=OFF
 33 = Drehknopf LED FET via R132
 
 J3:

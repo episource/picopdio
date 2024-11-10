@@ -4744,7 +4744,7 @@
 			)
 		)
 		(property "Footprint" "MCU_RaspberryPi_and_Boards:RPi_Pico_SMD_TH"
-			(at 10.414 29.21 0)
+			(at 29.718 -1.27 90)
 			(effects
 				(font
 					(size 1.27 1.27)

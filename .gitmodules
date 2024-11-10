@@ -1,3 +1,6 @@
 [submodule "llhttp"]
 	path = lib/llhttp
 	url = git@github.com:nodejs/llhttp.git
+[submodule "schematics/external/ncarandini-KiCad-RP-Pico"]
+	path = schematics/external/ncarandini-KiCad-RP-Pico
+	url = https://github.com/ncarandini/KiCad-RP-Pico.git
